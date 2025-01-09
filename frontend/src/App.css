@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.MuiContainer-root {
+  padding-top: 2rem;
+}
+
+.MuiAppBar-root {
+  background-color: #1976d2 !important;
+}
+
+.MuiToolbar-root {
+  justify-content: flex-end;
+}
+
+.MuiButton-root {
+  margin: 0 0.5rem;
+}
+
+/* Form styles */
+.MuiTextField-root {
+  margin-bottom: 1rem;
+}
+
+/* Error message styles */
+.error-message {
+  color: #f44336;
+  margin: 0.5rem 0;
+}
+
+/* Success message styles */
+.success-message {
+  color: #4caf50;
+  margin: 0.5rem 0;
+}
+
+/* OTP input styles */
+.otp-input {
+  letter-spacing: 0.5rem;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .MuiContainer-root {
+    padding-top: 1rem;
+  }
+  
+  .MuiButton-root {
+    margin: 0 0.25rem;
+  }
+}
