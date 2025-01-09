@@ -9,7 +9,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 // Styled components
 const PageContainer = styled(Box)({
   minHeight: '100vh',
-  backgroundColor: '#ffffff',
+  backgroundColor: '#f5f5f5', // Changed to a light gray for a softer login theme
   padding: '2rem 0',
 });
 
@@ -31,13 +31,13 @@ const GridContainer = styled(Box)({
 const Card = styled(Box)({
   backgroundColor: '#ffffff',
   borderRadius: '12px',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', // Slightly increased shadow for depth
   transition: 'transform 0.3s, box-shadow 0.3s',
   cursor: 'pointer',
   overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-5px)',
-    boxShadow: '0 6px 25px rgba(0, 0, 0, 0.12)',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)', // Enhanced hover effect
   },
 });
 
@@ -54,7 +54,7 @@ const CardContent = styled(Box)({
 const CardTitle = styled(Typography)({
   fontSize: '1.25rem',
   fontWeight: '600',
-  color: '#2c3e50',
+  color: '#e91e63', // Changed to a primary theme color
   marginBottom: '0.5rem',
 });
 
@@ -65,59 +65,17 @@ const CardDescription = styled(Typography)({
 
 const items = [
   {
-    title: 'Communication',
-    description: 'Master effective communication techniques',
-    image: 'https://via.placeholder.com/400x200?text=Communication',
-    link: '/communication'
+    title: 'Python Course',
+    description: 'Learn python from the masters',
+    image: 'https://via.placeholder.com/400x200?text=Python+Course',
+    link: '/python'
   },
   {
-    title: 'Self Introduction',
-    description: 'Learn to present yourself professionally',
-    image: 'https://via.placeholder.com/400x200?text=Self+Introduction',
-    link: '/self-intro'
+    title: 'Java',
+    description: 'Learn java from the masters',
+    image: 'https://via.placeholder.com/400x200?text=Java+Course',
+    link: '/java'
   },
-  {
-    title: 'Presentation Skills',
-    description: 'Develop impactful presentation abilities',
-    image: 'https://via.placeholder.com/400x200?text=Presentation',
-    link: '/presentation'
-  },
-  {
-    title: 'Resume Building',
-    description: 'Create compelling professional resumes',
-    image: 'https://via.placeholder.com/400x200?text=Resume',
-    link: '/resume'
-  },
-  {
-    title: 'Group Discussion',
-    description: 'Excel in group discussions and team activities',
-    image: 'https://via.placeholder.com/400x200?text=Group+Discussion',
-    link: '/gd'
-  },
-  {
-    title: 'BMC Pitching',
-    description: 'Presenting your business idea using the Business Model Canvas.',
-    image: 'https://via.placeholder.com/400x200?text=BMC+Pitching',
-    link: '/BMC_Pitching'
-  },
-  {
-    title: 'Networking',
-    description: 'Building connections to exchange ideas and opportunities.',
-    image: 'https://via.placeholder.com/400x200?text=Networking',
-    link: '/Networking'
-  },
-  {
-    title: 'Outfit',
-    description: ' Dressing professionally to make a strong impression.',
-    image: 'https://via.placeholder.com/400x200?text=Outfit',
-    link: '/outfit'
-  },
-  {
-    title: 'Interview',
-    description: 'Excel in group discussions and team activities',
-    image: 'https://via.placeholder.com/400x200?text=Interview',
-    link: '/Interview'
-  }
 ];
 
 const UserHome = () => {
@@ -160,15 +118,15 @@ const UserHome = () => {
     <PageContainer>
       <Header>
         <Box>
-          <Typography variant="h4" sx={{ color: '#2c3e50', fontWeight: '600' }}>
-            AI Trainer
+          <Typography variant="h4" sx={{ color: '#e91e63', fontWeight: '600' }}> {/* Changed color to match theme */}
+            AI Coursify
           </Typography>
           <Typography variant="h6" sx={{ color: '#666666', mt: 1 }}>
             Welcome, {firstName}!
           </Typography>
         </Box>
         <IconButton onClick={handleProfileClick} size="large">
-          <AccountCircleIcon sx={{ fontSize: 40, color: '#2c3e50' }} />
+          <AccountCircleIcon sx={{ fontSize: 40, color: '#e91e63' }} /> {/* Changed color to match theme */}
         </IconButton>
         <Menu
           anchorEl={anchorEl}
@@ -198,6 +156,9 @@ const UserHome = () => {
         </Menu>
       </Header>
 
+      <Typography variant="h5" sx={{ color: '#e91e63', fontWeight: '900', mb: 2 }}> {/* Changed color to match theme */}
+        Courses
+      </Typography>
       <GridContainer>
         {items.map((item, index) => (
           <Card key={index} onClick={() => navigate(item.link)}>

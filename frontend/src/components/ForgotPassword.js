@@ -2,17 +2,10 @@ import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import axios from '../config/axios';
-import {
-  Button,
-  TextField,
-  Container,
-  Typography,
-  Box,
-  Snackbar,
-  Alert,
-} from '@mui/material';
+import { Button, TextField, Container, Typography, Snackbar, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import OTPVerification from './OTPVerification';
+import AuthBackground from './AuthBackground';
 
 const ForgotPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -42,7 +35,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <Container maxWidth="sm">
+    <AuthBackground>
       <Snackbar 
         open={snackbar.open} 
         autoHideDuration={6000} 
@@ -54,134 +47,137 @@ const ForgotPassword = () => {
         </Alert>
       </Snackbar>
 
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-          Reset Password
-        </Typography>
+      <Typography component="h1" variant="h4" sx={{ mb: 1, color: '#F8B84E', fontWeight: 'bold' }}>
+        Forgot your Password?
+      </Typography>
 
-        <Formik
-          initialValues={{
-            email: '',
-            new_password: '',
-            confirm_password: '',
-          }}
-          validationSchema={ForgotPasswordSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            try {
-              if (!isEmailVerified) {
-                setSnackbar({
-                  open: true,
-                  message: 'Please verify your email first',
-                  severity: 'error'
-                });
-                return;
-              }
+      <Typography variant="h5" sx={{ mb: 3, color: '#000', fontWeight: 'bold' }}>
+        to get back in track
+      </Typography>
 
-              await axios.post('/api/reset-password/', {
-                email: values.email,
-                new_password: values.new_password,
-              });
+      <Typography variant="body1" sx={{ mb: 4, color: '#666' }}>
+        Enter your email address to receive a One-Time Password (OTP) for verification and reset your password.
+      </Typography>
 
+      <Formik
+        initialValues={{
+          email: '',
+          new_password: '',
+          confirm_password: '',
+        }}
+        validationSchema={ForgotPasswordSchema}
+        onSubmit={async (values, { setSubmitting }) => {
+          try {
+            if (!isEmailVerified) {
               setSnackbar({
                 open: true,
-                message: 'Password reset successful!',
-                severity: 'success'
-              });
-
-              setTimeout(() => {
-                navigate('/login');
-              }, 2000);
-
-            } catch (error) {
-              setSnackbar({
-                open: true,
-                message: error.response?.data?.error || 'Failed to reset password',
+                message: 'Please verify your email first',
                 severity: 'error'
               });
+              return;
             }
-            setSubmitting(false);
-          }}
-        >
-          {({ errors, touched, isSubmitting, values }) => (
-            <Form>
-              <Box sx={{ mb: 2 }}>
+
+            await axios.post('/api/reset-password/', {
+              email: values.email,
+              new_password: values.new_password,
+            });
+
+            setSnackbar({
+              open: true,
+              message: 'Password reset successful!',
+              severity: 'success'
+            });
+
+            setTimeout(() => {
+              navigate('/login');
+            }, 2000);
+
+          } catch (error) {
+            setSnackbar({
+              open: true,
+              message: error.response?.data?.error || 'Failed to reset password',
+              severity: 'error'
+            });
+          }
+          setSubmitting(false);
+        }}
+      >
+        {({ errors, touched, isSubmitting, values }) => (
+          <Form>
+            <Field
+              as={TextField}
+              fullWidth
+              name="email"
+              label="Email"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#fff' }}}
+              error={touched.email && errors.email}
+              helperText={touched.email && errors.email}
+              disabled={isEmailVerified}
+            />
+            {!isEmailVerified && values.email && !errors.email && (
+              <OTPVerification
+                type="reset"
+                identifier={values.email}
+                onVerify={(success) => {
+                  if (success) {
+                    setIsEmailVerified(true);
+                    setSnackbar({
+                      open: true,
+                      message: 'Email verified successfully',
+                      severity: 'success'
+                    });
+                  }
+                }}
+              />
+            )}
+
+            {isEmailVerified && (
+              <>
                 <Field
                   as={TextField}
                   fullWidth
-                  margin="normal"
-                  name="email"
-                  label="Email"
-                  error={touched.email && errors.email}
-                  helperText={touched.email && errors.email}
-                  disabled={isEmailVerified}
+                  name="new_password"
+                  label="New Password"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#fff' }}}
+                  type="password"
+                  error={touched.new_password && errors.new_password}
+                  helperText={touched.new_password && errors.new_password}
                 />
-                {!isEmailVerified && values.email && !errors.email && (
-                  <OTPVerification
-                    type="reset"
-                    identifier={values.email}
-                    onVerify={(success) => {
-                      if (success) {
-                        setIsEmailVerified(true);
-                        setSnackbar({
-                          open: true,
-                          message: 'Email verified successfully',
-                          severity: 'success'
-                        });
-                      }
-                    }}
-                  />
-                )}
-              </Box>
+                
+                <Field
+                  as={TextField}
+                  fullWidth
+                  name="confirm_password"
+                  label="Confirm Password"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', bgcolor: '#fff' }}}
+                  type="password"
+                  error={touched.confirm_password && errors.confirm_password}
+                  helperText={touched.confirm_password && errors.confirm_password}
+                />
+              </>
+            )}
+            
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2, borderRadius: '12px', py: 1.5, bgcolor: '#A84069', '&:hover': { bgcolor: '#8E355A' }}}
+              disabled={isSubmitting || !isEmailVerified}
+            > 
+              {!isEmailVerified ? 'Send Email' : 'Reset Password'}
+            </Button>
 
-              {isEmailVerified && (
-                <>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    margin="normal"
-                    name="new_password"
-                    label="New Password"
-                    type="password"
-                    error={touched.new_password && errors.new_password}
-                    helperText={touched.new_password && errors.new_password}
-                  />
-                  
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    margin="normal"
-                    name="confirm_password"
-                    label="Confirm Password"
-                    type="password"
-                    error={touched.confirm_password && errors.confirm_password}
-                    helperText={touched.confirm_password && errors.confirm_password}
-                  />
-                </>
-              )}
-              
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                disabled={isSubmitting || !isEmailVerified}
-              >
-                Reset Password
-              </Button>
-
-              <Box sx={{ textAlign: 'center' }}>
-                <Button
-                  onClick={() => navigate('/login')}
-                  variant="text"
-                >
-                  Back to Login
-                </Button>
-              </Box>
-            </Form>
-          )}
-        </Formik>
-      </Box>
-    </Container>
+            <Button
+              onClick={() => navigate('/login')}
+              variant="text"
+              sx={{ color: '#A84069' }}
+            >
+              Back to Login
+            </Button>
+          </Form>
+        )}
+      </Formik>
+    </AuthBackground>
   );
 };
 
