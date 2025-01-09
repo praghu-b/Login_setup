@@ -44,6 +44,7 @@ function App() {
               <Route path="/" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/admin-login" element={<Login />} />
             </Routes>
           </Container>
         </Box>

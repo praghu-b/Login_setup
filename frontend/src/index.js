@@ -13,8 +13,9 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <App />
+      </div>
     </ThemeProvider>
   </React.StrictMode>
 );
-

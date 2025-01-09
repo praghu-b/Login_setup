@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import axios from '../config/axios';
@@ -10,7 +10,7 @@ import {
   Box,
   Link as MuiLink,
 } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string().required('Required'),
@@ -32,6 +32,7 @@ const SignupSchema = Yup.object().shape({
 
 const AdminSignup = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [showOtpField, setShowOtpField] = useState(false);
@@ -39,6 +40,7 @@ const AdminSignup = () => {
   const [verificationError, setVerificationError] = useState('');
   const [showResendButton, setShowResendButton] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [userType, setUserType ] = useState()
 
   React.useEffect(() => {
     if (resendTimer > 0) {
@@ -47,11 +49,16 @@ const AdminSignup = () => {
     }
   }, [resendTimer]);
 
+  useEffect(() => {
+    // Set user type based on URL path
+    setUserType(location.pathname === '/admin-signup' ? 'admin' : 'user');
+  }, [location.pathname]);
+
   const handleSendOtp = async (email) => {
     try {
       setVerificationError('');
       setShowResendButton(false);
-      await axios.post('/api/send-signup-otp/', { email });
+      await axios.post('/api/send-signup-otp/', { email, type: userType });
       setShowOtpField(true);
       setResendTimer(30);
       alert('OTP sent to your email!');
@@ -65,7 +72,8 @@ const AdminSignup = () => {
       setVerificationError('');
       await axios.post('/api/verify-signup-otp/', { 
         email, 
-        otp 
+        otp,
+        type: userType 
       });
       setIsEmailVerified(true);
       setShowOtpField(false);
