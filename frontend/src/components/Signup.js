@@ -1,23 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import axios from '../config/axios';
-import {
-  Button,
-  TextField,
-  Container,
-  Typography,
-  Box,
-  Link as MuiLink,
-  Tabs,
-  Tab,
-  CircularProgress,
-  Snackbar,
-  Alert,
-} from '@mui/material';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
 import OTPVerification from './OTPVerification';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import GraduateImg from '../images/login.png'
 
 const SignupSchema = Yup.object().shape({
   first_name: Yup.string().required('Required'),
@@ -38,261 +25,192 @@ const SignupSchema = Yup.object().shape({
     .required('Required'),
 });
 
-const OTPContainer = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1rem',
-  marginTop: '1rem',
-});
-
-const TimerText = styled(Typography)({
-  color: '#666',
-  fontSize: '0.9rem',
-});
-
-const ResendButton = styled(Button)({
-  minWidth: 'auto',
-});
-
 const Signup = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [userType, setUserType] = useState('user');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isMobileVerified, setIsMobileVerified] = useState(false);
-  const [verificationError, setVerificationError] = useState('');
-  const [mobileVerificationError, setMobileVerificationError] = useState('');
   
-  // Add snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success'
   });
 
-  const handleTabChange = (event, newValue) => {
-    setUserType(newValue);
-    setError('');
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
-
   return (
-    <Container maxWidth="sm">
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+    <div className="flex min-h-screen p-5">
+      <div className="bg-pink-100 rounded-2xl flex flex-col md:flex-row w-full gap-4 items-center justify-center p-5">
+        <div className="flex-1 flex justify-center">
+          <img src={GraduateImg} alt="Graduate" className="w-96 rounded-full bg-pink-300" />
+        </div>
+        
+        <div className="flex-1 bg-white p-4 rounded-lg shadow-lg">
+          <h1 className="text-3xl font-bold mb-2 text-amber-400">Sign Up</h1>
+          <h2 className="text-xl font-bold mb-4">to enlighten your skills!</h2>
 
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5">
-          Sign Up
-        </Typography>
-
-        <Tabs value={userType} onChange={handleTabChange} sx={{ mb: 3 }}>
-          <Tab label="User Signup" value="user" />
-          <Tab label="Admin Signup" value="admin" />
-        </Tabs>
-
-        {error && (
-          <Box sx={{ mb: 2, width: '100%' }}>
-            <Typography color="error" align="center">
-              {error}
-            </Typography>
-          </Box>
-        )}
-
-        <Formik
-          initialValues={{
-            first_name: '',
-            last_name: '',
-            email: '',
-            mobile_number: '',
-            password: '',
-            confirm_password: '',
-          }}
-          validationSchema={SignupSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            try {
-              if (!isEmailVerified) {
+          <Formik
+            initialValues={{
+              first_name: '',
+              last_name: '',
+              email: '',
+              mobile_number: '',
+              password: '',
+              confirm_password: '',
+            }}
+            validationSchema={SignupSchema}
+            onSubmit={async (values, { setSubmitting }) => {
+              try {
+                if (!isEmailVerified) {
+                  setSnackbar({
+                    open: true,
+                    message: 'Please verify your email first',
+                    severity: 'error'
+                  });
+                  return;
+                }
+                if (!isMobileVerified) {
+                  setSnackbar({
+                    open: true,
+                    message: 'Please verify your mobile number first',
+                    severity: 'error'
+                  });
+                  return;
+                }
+                setError('');
+                await axios.post('/api/register/', {
+                  ...values,
+                  name: `${values.first_name} ${values.last_name}`,
+                  user_type: userType
+                });
                 setSnackbar({
                   open: true,
-                  message: 'Please verify your email first',
-                  severity: 'error'
+                  message: `${userType === 'admin' ? 'Admin' : 'User'} registered successfully!`,
+                  severity: 'success'
                 });
-                return;
+                navigate('/login');
+              } catch (error) {
+                setError(error.response?.data?.error || 'Registration failed');
               }
-              if (!isMobileVerified) {
-                setSnackbar({
-                  open: true,
-                  message: 'Please verify your mobile number first',
-                  severity: 'error'
-                });
-                return;
-              }
-              setError('');
-              await axios.post('/api/register/', {
-                ...values,
-                name: `${values.first_name} ${values.last_name}`,
-                user_type: userType
-              });
-              setSnackbar({
-                open: true,
-                message: `${userType === 'admin' ? 'Admin' : 'User'} registered successfully!`,
-                severity: 'success'
-              });
-              navigate('/login');
-            } catch (error) {
-              setError(error.response?.data?.error || 'Registration failed');
-            }
-            setSubmitting(false);
-          }}
-        >
-          {({ errors, touched, isSubmitting, values, handleChange }) => (
-            <Form>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Field
-                  as={TextField}
-                  fullWidth
-                  margin="normal"
-                  name="first_name"
-                  label="First Name"
-                  error={touched.first_name && errors.first_name}
-                  helperText={touched.first_name && errors.first_name}
-                />
-                
-                <Field
-                  as={TextField}
-                  fullWidth
-                  margin="normal"
-                  name="last_name"
-                  label="Last Name"
-                  error={touched.last_name && errors.last_name}
-                  helperText={touched.last_name && errors.last_name}
-                />
-              </Box>
-              
-              <Field
-                as={TextField}
-                fullWidth
-                margin="normal"
-                name="email"
-                label="Email"
-                error={touched.email && errors.email}
-                helperText={touched.email && errors.email}
-                disabled={isEmailVerified}
-                onChange={(e) => {
-                  handleChange(e);
-                  localStorage.setItem('tempEmail', e.target.value);
-                }}
-              />
-              {!isEmailVerified && values.email && !errors.email && (
-                <OTPVerification
-                  type="email"
-                  identifier={values.email}
-                  onVerify={(success) => {
-                    if (success) {
-                      setIsEmailVerified(true);
-                      setSnackbar({
-                        open: true,
-                        message: 'Email verified successfully',
-                        severity: 'success'
-                      });
-                    }
-                  }}
-                />
-              )}
-
-              <Box sx={{ mb: 2 }}>
-                <Field
-                  as={TextField}
-                  fullWidth
-                  margin="normal"
-                  name="mobile_number"
-                  label="Mobile Number"
-                  error={touched.mobile_number && errors.mobile_number}
-                  helperText={touched.mobile_number && errors.mobile_number}
-                  disabled={isMobileVerified}
-                />
-                {!isMobileVerified && values.mobile_number && !errors.mobile_number && (
-                  <OTPVerification
-                    type="mobile"
-                    identifier={values.mobile_number}
-                    onVerify={(success) => {
-                      if (success) {
-                        setIsMobileVerified(true);
-                        setSnackbar({
-                          open: true,
-                          message: 'Mobile number verified successfully',
-                          severity: 'success'
-                        });
-                      }
-                    }}
+              setSubmitting(false);
+            }}
+          >
+            {({ errors, touched, isSubmitting, values }) => (
+              <Form>
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3">
+                    <Field
+                      className={`w-full p-1 border rounded-lg ${touched.first_name && errors.first_name ? 'border-red-500' : 'border-gray-300'}`}
+                      name="first_name"
+                      placeholder="First Name"
+                    />
+                    <Field
+                      className="w-full p-1 border rounded-lg border-gray-300"
+                      name="last_name"
+                      placeholder="Middle Name (optional)"
+                    />
+                  </div>  
+                  
+                  <Field
+                    className={`w-full p-1 border rounded-lg ${touched.last_name && errors.last_name ? 'border-red-500' : 'border-gray-300'}`}
+                    name="last_name"
+                    placeholder="Last Name"
                   />
-                )}
-              </Box>
 
-              {verificationError && (
-                <Typography color="error" sx={{ mt: 1 }}>
-                  {verificationError}
-                </Typography>
-              )}
-              {mobileVerificationError && (
-                <Typography color="error" sx={{ mt: 1 }}>
-                  {mobileVerificationError}
-                </Typography>
-              )}
-              
-              <Field
-                as={TextField}
-                fullWidth
-                margin="normal"
-                name="password"
-                label="Password"
-                type="password"
-                error={touched.password && errors.password}
-                helperText={touched.password && errors.password}
-              />
-              
-              <Field
-                as={TextField}
-                fullWidth
-                margin="normal"
-                name="confirm_password"
-                label="Confirm Password"
-                type="password"
-                error={touched.confirm_password && errors.confirm_password}
-                helperText={touched.confirm_password && errors.confirm_password}
-              />
-              
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                disabled={isSubmitting || !isEmailVerified || !isMobileVerified}
-              >
-                {`Sign Up as ${userType === 'admin' ? 'Admin' : 'User'}`}
-              </Button>
+                  <div className="relative">
+                     <Field
+                      className={`w-full p-1 border rounded-lg ${touched.email && errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                      name="email"
+                      placeholder="Email Address"
+                      disabled={isEmailVerified}
+                    />
+                    {!isEmailVerified && values.email && !errors.email && (
+                      <OTPVerification
+                        type="email"
+                        identifier={values.email}
+                        onVerify={(success) => {
+                          if (success) {
+                            setIsEmailVerified(true);
+                            setSnackbar({
+                              open: true,
+                              message: 'Email verified successfully',
+                              severity: 'success'
+                            });
+                          }
+                        }}
+                        CustomButton={<button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-rose-600 text-white py-1 px-2 rounded">Verify</button>}
+                      />
+                    )}
+                  </div>
 
-              <Box sx={{ textAlign: 'center' }}>
-                <MuiLink component={RouterLink} to="/login" variant="body2">
-                  Already have an account? Login
-                </MuiLink>
-              </Box>
-            </Form>
-          )}
-        </Formik>
-      </Box>
-    </Container>
+                  <div className="relative">
+                    <Field
+                      className={`w-full p-1 border rounded-lg ${touched.mobile_number && errors.mobile_number ? 'border-red-500' : 'border-gray-300'}`}
+                      name="mobile_number"
+                      placeholder="Phone Number"
+                      disabled={isMobileVerified}
+                    />
+                    {!isMobileVerified && values.mobile_number && !errors.mobile_number && (
+                      <OTPVerification
+                        type="mobile"
+                        identifier={values.mobile_number}
+                        onVerify={(success) => {
+                          if (success) {
+                            setIsMobileVerified(true);
+                            setSnackbar({
+                              open: true,
+                              message: 'Mobile number verified successfully',
+                              severity: 'success'
+                            });
+                          }
+                        }}
+                        CustomButton={<button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-rose-600 text-white py-1 px-2 rounded">Verify</button>}
+                      />
+                    )}
+                  </div>
+                  
+                  <Field
+                    className={`w-full p-1 border rounded-lg ${touched.password && errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                  />
+                  
+                  <Field
+                    className={`w-full p-1 border rounded-lg ${touched.confirm_password && errors.confirm_password ? 'border-red-500' : 'border-gray-300'}`}
+                    name="confirm_password"
+                    placeholder="Confirm Password"
+                    type="password"
+                  />
+
+                  <div className="text-center">
+                    <p>
+                      I agree with the{' '}
+                      <RouterLink to="/terms" className="text-amber-400">Terms & Conditions</RouterLink>
+                    </p>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    className={`w-full bg-rose-600 text-white py-2 rounded-lg font-semibold ${isSubmitting || !isEmailVerified || !isMobileVerified ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isSubmitting || !isEmailVerified || !isMobileVerified}
+                  >
+                    Sign Up
+                  </button>
+
+                  <div className="text-center">
+                    <p>
+                      Already have an account?{' '}
+                      <RouterLink to="/login" className="text-amber-400">Sign In</RouterLink>
+                    </p>
+                  </div>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </div>
+    </div>
   );
 };
 

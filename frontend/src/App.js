@@ -20,7 +20,7 @@ function App() {
     <ErrorBoundary>
       <Router>
         <Box sx={{ flexGrow: 1 }}>
-          {showNavBar && (
+          {/* {showNavBar && (
             <AppBar position="static">
               <Toolbar>
                 <Button color="inherit" component={Link} to="/login">
@@ -31,7 +31,7 @@ function App() {
                 </Button>
               </Toolbar>
             </AppBar>
-          )}
+          )} */}
           
           <Container>
             <Routes>

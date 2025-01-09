@@ -3,14 +3,11 @@ import {
   Container,
   Box,
   Typography,
-  Paper,
+  Card,
   Avatar,
   Grid,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Modal,
   TextField,
   IconButton,
 } from '@mui/material';
@@ -77,7 +74,6 @@ const Profile = () => {
       });
 
       if (response.data.success) {
-        // Update local storage with new user data
         const updatedUser = { ...user, [editDialog.field]: newValue };
         localStorage.setItem('userInfo', JSON.stringify(updatedUser));
         setUser(updatedUser);
@@ -98,9 +94,11 @@ const Profile = () => {
     const isMobile = editDialog.field === 'mobile_number';
 
     return (
-      <Dialog open={editDialog.open} onClose={handleClose}>
-        <DialogTitle>Update {editDialog.field?.replace('_', ' ')}</DialogTitle>
-        <DialogContent>
+      <Modal open={editDialog.open} onClose={handleClose}>
+        <Box sx={{ bgcolor: '#f5f5f5', p: 4, borderRadius: 2, boxShadow: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ color: '#2c3e50' }}>
+            Update {editDialog.field?.replace('_', ' ')}
+          </Typography>
           <TextField
             autoFocus
             margin="dense"
@@ -109,6 +107,7 @@ const Profile = () => {
             fullWidth
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
+            sx={{ bgcolor: '#ffffff' }}
           />
           {isEmail && newValue && (
             <OTPVerification
@@ -124,28 +123,28 @@ const Profile = () => {
               onVerify={(success) => setIsMobileVerified(success)}
             />
           )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleUpdate}>Update</Button>
-        </DialogActions>
-      </Dialog>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Button onClick={handleClose} variant="outlined" sx={{ color: '#2c3e50' }}>Cancel</Button>
+            <Button onClick={handleUpdate} variant="contained" sx={{ bgcolor: '#e91e63', color: '#ffffff' }}>Update</Button>
+          </Box>
+        </Box>
+      </Modal>
     );
   };
 
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4, mb: 4 }}>
-        <Button onClick={handleBack} variant="outlined" sx={{ mb: 2 }}>
+        <Button onClick={handleBack} variant="outlined" sx={{ mb: 2, color: '#e91e63' }}>
           Back to Home
         </Button>
         
-        <Paper elevation={3} sx={{ p: 3 }}>
+        <Card elevation={3} sx={{ p: 3, bgcolor: '#ffffff' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
             <Avatar sx={{ width: 100, height: 100, mb: 2 }}>
-              <AccountCircleIcon sx={{ fontSize: 100 }} />
+              <AccountCircleIcon sx={{ fontSize: 100, color: '#e91e63' }} />
             </Avatar>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="h4" gutterBottom sx={{ color: '#2c3e50' }}>
               Profile Details
             </Typography>
           </Box>
@@ -226,12 +225,12 @@ const Profile = () => {
               variant="contained" 
               color="error" 
               onClick={handleLogout}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: 200, bgcolor: '#e91e63', color: '#ffffff' }}
             >
               Logout
             </Button>
           </Box>
-        </Paper>
+        </Card>
       </Box>
       {renderEditDialog()}
     </Container>
