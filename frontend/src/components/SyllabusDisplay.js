@@ -64,7 +64,7 @@ function SyllabusDisplay() {
         throw new Error("User ID is missing");
       }
 
-      const response = await fetch("http://localhost:8000/admins/save-syllabus/", {
+      const response = await fetch("http://localhost:8000/admins/update-syllabus/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

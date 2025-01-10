@@ -13,7 +13,7 @@ function Dashboard() {
   useEffect(() => {
     fetch("http://localhost:8000/admins/dashboard/")
       .then((response) => response.json())
-      .then((data) => setCourses(data.courses))
+      // .then((data) => setCourses(data.courses))
       .catch((error) => console.error("Error fetching dashboard data:", error));
   }, []);
 

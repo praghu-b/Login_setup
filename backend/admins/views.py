@@ -8,11 +8,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from .mongodb import admins_collection
 from rest_framework.decorators import api_view
+import requests
 
 
 
 # Set up your Google API Key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyCXUD9xY8Vh2OlXQ19FpSkedo3TkSku3MU"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyDdgepmfxfPW6V5SEUJWDh29L9DthXPhkE"
+api_url = "https://1b76-103-196-28-98.ngrok-free.app/generate"
 
 # Initialize the Gemini model
 llm = ChatGoogleGenerativeAI(
