@@ -53,7 +53,7 @@ const Login = () => {
 
             localStorage.setItem('userInfo', JSON.stringify(response.data));
             // Redirect based on user type
-            navigate(userType === 'admin' ? '/admin-home' : '/user-home');
+            navigate(userType === 'admin' ? '/dashboard' : '/user-home');
           } catch (error) {
             setError(error.response?.data?.error || 'Login failed');
           }

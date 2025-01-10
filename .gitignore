@@ -41,12 +41,15 @@ db.sqlite3-journal
 # Environment variables
 .env
 
+
 # Virtual environment
 venv/
 env/
 ENV/
 .venv/
 .ENV/
+myenv/
+
 
 # VS Code
 .vscode/
