@@ -1,0 +1,50 @@
+.edit-syllabus-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.edit-syllabus-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.edit-syllabus-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-syllabus-container label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.edit-syllabus-container input,
+.edit-syllabus-container textarea {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.edit-syllabus-container button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.edit-syllabus-container button:hover {
+  background-color: #0056b3;
+}
+
+.edit-syllabus-container p {
+  text-align: center;
+  color: green;
+  font-weight: bold;
+}

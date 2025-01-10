@@ -10,6 +10,10 @@ import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
 import { AppBar, Toolbar, Button, Container, Box } from '@mui/material';
 import ErrorBoundary from './components/ErrorBoundary';
+import Dashboard from './components/Dashboard';
+import CourseDetails from './components/CourseDetails';
+import SyllabusDisplay from './components/SyllabusDisplay';
+import ContentDisplay from './components/ContentDisplay';
 
 function App() {
   // Get current path
@@ -45,6 +49,12 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin-login" element={<Login />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create-course" element={<CourseDetails />} />
+              <Route path="/syllabus" element={<SyllabusDisplay />} />
+              <Route path="/edit-syllabus" element={<SyllabusDisplay />} />
+              <Route path="/content" element={<ContentDisplay />} />
+
             </Routes>
           </Container>
         </Box>
