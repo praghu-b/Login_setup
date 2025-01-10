@@ -7,7 +7,10 @@
 
 # testing
 /coverage
-
+# Jest
+/jest.config.js
+/jest.setup.js
+/jest/
 # production
 /build
 
@@ -47,7 +50,7 @@ env/
 ENV/
 .venv/
 .ENV/
-
+myenv/
 # VS Code
 .vscode/
 
@@ -56,3 +59,124 @@ ENV/
 
 # Windows
 Thumbs.db
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Logs
+*.log
+
+# Compiled files
+*.o
+*.so
+*.out
+
+# Backup files
+*.bak
+*.tmp
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# JetBrains
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Eclipse
+.project
+.classpath
+.cproject
+.settings/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vscode/
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.history/
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*.swn
+*.un~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+# IntelliJ
+*.iws
+*.iml
+*.ipr
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio
+.vscode/
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.history/
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*.swn
+*.un~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# JetBrains Rider
+.idea/
+*.sln.iml

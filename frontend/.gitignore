@@ -56,3 +56,57 @@ ENV/
 
 # Windows
 Thumbs.db
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+
+# Compiled files
+*.out
+*.o
+*.class
+
+# IDEs
+*.iml
+*.ipr
+*.iws
+
+# JetBrains
+.idea/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.project
+.classpath
+
+# NetBeans
+.nb-gradle/
+.nb-gradle-private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+.nb-gradle-private/
+build/
+nbbuild/
+dist/
+nbdist/

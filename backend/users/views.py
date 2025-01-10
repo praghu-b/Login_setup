@@ -739,3 +739,7 @@ def update_profile(request):
             {'error': 'Failed to update profile'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+        
+        
+        
+
