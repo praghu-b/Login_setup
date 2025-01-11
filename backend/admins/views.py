@@ -72,6 +72,7 @@ Course Details:
 - Level: {level}
 - Tone: {tone}
 - Duration: {duration}
+- No. of Modules: {num_modules}
 
 The syllabus should be returned as a clean JSON object with the following structure:
 
@@ -109,7 +110,7 @@ The syllabus should be returned as a clean JSON object with the following struct
         }}
       ]
     }}
-    // Add as many modules as required based on the course structure
+    // Add as many modules as required based on the No. of Modules
   ]
 }}
 
