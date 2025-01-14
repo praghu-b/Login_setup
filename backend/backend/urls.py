@@ -36,4 +36,5 @@ urlpatterns = [
     path('api/test-email/', views.test_email, name='test-email'),
     path('api/update-profile/', views.update_profile, name='update-profile'),
     path('admins/', include('admins.urls')),
+    path('users/', include('users.urls')),
 ]

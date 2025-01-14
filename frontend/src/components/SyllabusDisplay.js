@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-
 function SyllabusDisplay() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -14,18 +13,16 @@ function SyllabusDisplay() {
   useEffect(() => {
     const storedUserInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
 
-    setUserId(storedUserInfo.id);
+    if (!storedUserInfo || storedUserInfo.user_type !== 'admin') {
+      navigate('/login');
+      return;
+    }
+
+    console.log('SYLLABUS: ',syllabus);
     
-    // if (storedUserInfo?.id) {
-    //   setUserId(storedUserInfo.id);
-    //   console.log("storedUserInfo", storedUserInfo.id);
 
-
-    // } else {
-    //   console.error("User ID not found in localStorage");
-    // }
-  }, []);
-  
+    setUserId(storedUserInfo.id);
+  }, [navigate]);
 
   const handleEditAll = () => {
     setEditingAll(true);
@@ -81,8 +78,9 @@ function SyllabusDisplay() {
         body: JSON.stringify({ syllabus: data.syllabus }),
       });
       const contentData = await contentResponse.json();
+      
 
-      navigate("/content", { state: { content: contentData.content } });
+      navigate("/content", { state: { content: contentData.content, course_details: { course_name: syllabus.course_name, domain: syllabus.domain, level: syllabus.level, duration: syllabus.duration } } });
     } catch (error) {
       console.error("Error:", error);
     }
@@ -122,42 +120,44 @@ function SyllabusDisplay() {
 
   return (
     <div className="container mx-auto mt-8 p-4">
-      <h2 className="text-2xl font-bold mb-4">Generated Syllabus</h2>
-      <div className="bg-white shadow-md rounded p-4">
-        <h3 className="text-xl font-semibold">Course Name: {syllabus.course_name}</h3>
-        <p className="text-gray-700">Domain: {syllabus.domain}</p>
-        <p className="text-gray-700">Level: {syllabus.level}</p>
-        <p className="text-gray-700">Duration: {syllabus.duration}</p>
-        <h3 className="text-lg font-semibold mt-4">Modules:</h3>
-        {selectMode ? (
+      <h2 className="text-3xl font-bold mb-6 text-gray-800">Generated Syllabus</h2>
+      <div className="bg-white shadow-lg rounded-lg p-6">
+        <h3 className="text-2xl font-semibold text-gray-800 mb-2">Course Name: {syllabus.course_name}</h3>
+        <p className="text-gray-700 mb-1"><span className="font-semibold">Domain:</span> {syllabus.domain}</p>
+        <p className="text-gray-700 mb-1"><span className="font-semibold">Level:</span> {syllabus.level}</p>
+        <p className="text-gray-700 mb-4"><span className="font-semibold">Duration:</span> {syllabus.duration}</p>
+        <h3 className="text-xl font-semibold mt-4 text-gray-800">Modules:</h3>
+        <div className="flex space-x-2 mt-2">
+          {selectMode ? (
+            <button
+              onClick={handleDeleteSelected}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Delete Selected
+            </button>
+          ) : (
+            <button
+              onClick={handleSelectMode}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Select To Delete
+            </button>
+          )}
           <button
-            onClick={handleDeleteSelected}
-            className="bg-red-500 text-white px-4 py-2 rounded mt-2 mr-2"
+            onClick={handleEditAll}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
-            Delete Selected
+            Edit All
           </button>
-        ) : (
           <button
-            onClick={handleSelectMode}
-            className="bg-blue-500 text-white px-4 py-2 rounded mt-2 mr-2"
+            onClick={handleSaveAll}
+            className="bg-green-500 text-white px-4 py-2 rounded"
           >
-            Select To Delete
+            Save All
           </button>
-        )}
-        <button
-          onClick={handleEditAll}
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-2 mr-2"
-        >
-          Edit All
-        </button>
-        <button
-          onClick={handleSaveAll}
-          className="bg-green-500 text-white px-4 py-2 rounded mt-2 mr-2"
-        >
-          Save All
-        </button>
+        </div>
         {syllabus.modules.map((module) => (
-          <div key={module.module_id} className="mb-4">
+          <div key={module.module_id} className="mb-4 mt-4 p-4 border border-gray-200 rounded-lg">
             {selectMode && (
               <input
                 type="checkbox"
@@ -172,14 +172,14 @@ function SyllabusDisplay() {
                 name="title"
                 value={module.title}
                 onChange={(e) => handleChange(e, module.module_id)}
-                className="border border-gray-300 rounded p-2 w-full"
+                className="border border-gray-300 rounded p-2 w-full mb-2"
               />
             ) : (
-              <h4 className="text-lg font-medium">{module.title}</h4>
+              <h4 className="text-lg font-medium text-gray-800">{module.title}</h4>
             )}
             <ul className="list-disc list-inside mt-2">
               {module.submodules.map((submodule) => (
-                <li key={submodule.submodule_id} className="ml-4">
+                <li key={submodule.submodule_id} className="ml-4 text-gray-700">
                   {selectMode && (
                     <input
                       type="checkbox"
@@ -209,7 +209,7 @@ function SyllabusDisplay() {
         onClick={handleSaveSyllabus}
         className="bg-green-500 text-white px-4 py-2 rounded mt-4"
       >
-        Save Syllabus
+        Generate Content
       </button>
     </div>
   );

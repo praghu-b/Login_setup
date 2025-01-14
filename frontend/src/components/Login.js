@@ -26,8 +26,8 @@ const Login = () => {
 
   return (
     <AuthBackground>
-      <h1 className="text-4xl font-bold text-amber-400 mb-2">
-        {userType === 'admin' ? 'Admin Sign In' : 'Sign In'}
+      <h1 className="text-4xl font-bold text-amber-400 mb-2 mx-[5px]">
+        {userType === 'admin' ? 'Admin Sign In' : 'User Sign In'}
       </h1>
       <p className="text-3xl font-bold text-black mb-5">to get back in track</p>
 

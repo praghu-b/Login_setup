@@ -6,14 +6,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
-from .mongodb import admins_collection
+from .mongodb import admins_collection, courses_collection
 from rest_framework.decorators import api_view
 import requests
 
 
 
 # Set up your Google API Key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDdgepmfxfPW6V5SEUJWDh29L9DthXPhkE"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyDpSAi1imqUM7dwRbZrb6xX-pN4lIBOC5Y"
 api_url = "https://1b76-103-196-28-98.ngrok-free.app/generate"
 
 # Initialize the Gemini model
@@ -84,7 +84,7 @@ The syllabus should be returned as a clean JSON object with the following struct
   "modules": [
     {{
       "module_id": 1,
-      "title": "Module 1: <Module Title>",
+      "title": "<Module Title>",
       "submodules": [
         {{
           "submodule_id": 1.1,
@@ -98,7 +98,7 @@ The syllabus should be returned as a clean JSON object with the following struct
     }},
     {{
       "module_id": 2,
-      "title": "Module 2: <Module Title>",
+      "title": "<Module Title>",
       "submodules": [
         {{
           "submodule_id": 2.1,
@@ -113,6 +113,7 @@ The syllabus should be returned as a clean JSON object with the following struct
     // Add as many modules as required based on the No. of Modules
   ]
 }}
+
 
 Guidelines:
 1. Each module must have a unique `module_id` and a descriptive title.
@@ -212,11 +213,44 @@ def save_syllabus(request):
             {"error": f"An error occurred: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+    
+@api_view(['POST'])
+def save_generated_content(request):
+    try:
+        content = request.data.get('content')
+        admin_id = request.data.get('admin_id')
+        course_details = request.data.get('course_details')
+        course_status = request.data.get('status')
+        
+        if not content or not course_details:
+            return Response(
+                {"error": "Content and course_details are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        courses_collection.insert_one(
+            {
+            "admin_id": admin_id,
+            "course_details": course_details,
+            "content": content,
+            "status": course_status
+            }
+        )
+        
+        return Response({"message": "Content saved successfully"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"An error occurred while saving the content: {str(e)}")
+        return Response(
+            {"error": f"An error occurred: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 class GenerateContentView(APIView):
     def post(self, request):
         # Extract the syllabus from the request
         syllabus = request.data.get("syllabus")
+        course_name = request.data.get("course_name")
+        print(course_name)
 
         if not syllabus:
             return Response(
@@ -243,12 +277,26 @@ Output the content in a clean JSON format with the following structure:
 
 {{
   "module_content": "<Detailed content for the module>",
+  "module_title": "<Module_Title>",
   "submodules_content": [
     {{
-      "submodule_id": <submodule_id>,
-      "content": "<Detailed content for the submodule>"
-    }},
-    // Add as many submodules as required.
+      "submodule_id": "<submodule_id>",
+      "title": "<Submodule_Title>",
+      "content": "<Detailed content for the submodule>",
+      "contents": [
+        {{
+          "content_id": "<content_id>",
+          "title": "<Content_Title>",
+          "content": "<Detailed content for the specific topic>"
+        }},
+        {{
+          "content_id": "<content_id>",
+          "title": "<Content_Title>",
+          "content": "<Detailed content for the specific topic>"
+        }}
+      ]
+    }}
+    // Add as many submodules and contents as required
   ]
 }}
 """
@@ -256,10 +304,22 @@ Output the content in a clean JSON format with the following structure:
         try:
             # Generate content for each module and submodule
             content = {}
-            for module in syllabus["modules"]:
-                module_title = module["title"]
-                submodules = "\n".join([f"{submodule['submodule_id']}: {submodule['title']}" for submodule in module["submodules"]])
-                prompt = content_prompt.format(module_title=module_title, submodules=submodules, level=syllabus["level"])
+            for module in syllabus.get("modules", []):
+                module_title = module.get("title", "")
+                submodules = "\n".join([
+                    f"{submodule['submodule_id']}: {submodule['title']}"
+                    for submodule in module.get("submodules", [])
+                ])
+
+                # Skip empty modules
+                if not module_title or not submodules:
+                    continue
+
+                prompt = content_prompt.format(
+                    module_title=module_title,
+                    submodules=submodules,
+                    level=syllabus.get("level", "unspecified")
+                )
 
                 # Set up the prompt and chain
                 prompt_template = ChatPromptTemplate.from_messages(
@@ -283,20 +343,24 @@ Output the content in a clean JSON format with the following structure:
                 if response_text.startswith("```json") and response_text.endswith("```"):
                     response_text = response_text[len("```json"): -len("```")].strip()
 
+                # Clean up any extraneous whitespace or characters
+                response_text = response_text.replace("\n", "").replace("\t", "")
+
                 # Parse the response to ensure it is a clean JSON object
-                module_content = json.loads(response_text)
+                try:
+                    module_content = json.loads(response_text)
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSONDecodeError: Could not parse AI response. Error: {e}. Response: {response_text}")
+                    return Response(
+                        {"error": "The response from the AI could not be parsed as JSON."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
 
                 # Add the content to the result
-                content[module["module_id"]] = module_content
+                content[module.get("module_id", len(content) + 1)] = module_content
 
             return Response({"content": content}, status=status.HTTP_200_OK)
 
-        except json.JSONDecodeError:
-            logger.error(f"JSONDecodeError: The response could not be parsed as JSON. Raw response: {response_text}")
-            return Response(
-                {"error": "The response could not be parsed as JSON."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}")
             return Response(
@@ -392,6 +456,43 @@ Output the content in a clean JSON format with the following structure:
 
 # Optionally: Adding DashboardView
 class DashboardView(APIView):
-    def get(self, request):
-        # You can return any necessary data here if you need to fetch something dynamically for the dashboard
-        return Response({"message": "Welcome to the AI Syllabus Generator Dashboard"}, status=status.HTTP_200_OK)
+    def get(self, request, adminId):
+        try:
+            # Get the admin_id from the request
+            # admin_id = request.query_params.get('adminId')
+            admin_id = adminId
+            
+            if not admin_id:
+                return Response(
+                    {"error": "admin_id is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            # Get courses for the specific admin_id from MongoDB
+            courses_data = []
+            courses_cursor = courses_collection.find({"admin_id": admin_id})
+            
+            for course in courses_cursor:
+                course_data = {
+                    'course_id': str(course.get('_id', '')),
+                    'admin_id': course.get('admin_id', ''),
+                    'status': course.get('status', ''),
+                    'course_details': course.get('course_details', {})
+                }
+                
+                courses_data.append(course_data)
+            
+            return Response({
+                'courses': courses_data
+            }, status=status.HTTP_200_OK)
+            
+        except KeyError as e:
+            logger.error(f"Missing key in course data: {str(e)}")
+            return Response({
+                'error': f'Missing key in course data: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            logger.error(f"Dashboard error: {str(e)}")
+            return Response({
+                'error': 'Failed to fetch dashboard data'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

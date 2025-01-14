@@ -24,6 +24,7 @@ try:
     db = client["login_system"]
     users_collection = db["users"]
     admins_collection = db["admins"]
+    courses_collection = db["courses"]
 
     # Create indexes for email (unique) for both collections
     users_collection.create_index("email", unique=True)
