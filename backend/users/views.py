@@ -5,11 +5,11 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail, get_connection
 from django.core.mail.backends.smtp import EmailBackend
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from .models import CustomUser
 from pymongo.errors import ConnectionFailure, OperationFailure
-from .mongodb import users_collection, admins_collection, db
+from .mongodb import users_collection, admins_collection, db, courses_collection, enrollments_collection
 import logging
 import random
 from django.core.cache import cache
@@ -739,3 +739,89 @@ def update_profile(request):
             {'error': 'Failed to update profile'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['GET'])
+def fetch_all_courses(request):
+    try:
+        courses_data = []
+        courses_cursor = list(courses_collection.find({}))
+        for course in courses_cursor:
+            if course.get('status') == 'published':
+                course_data = {
+                    'course_id': str(course.get('_id', '')),
+                    'admin_id': course.get('admin_id', ''),
+                    'status': course.get('status', ''),
+                    'course_details': course.get('course_details', {}),
+                }
+                courses_data.append(course_data)
+
+        return Response({
+            'courses': courses_data
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error fetching courses: {str(e)}", exc_info=True)
+        return Response({
+            'status': 'error',
+            'message': 'Failed to fetch courses'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def fetch_syllabus(request, courseId):
+    try:
+        course = courses_collection.find_one({'_id': ObjectId(courseId)})
+        if not course:
+            return Response({
+                'error': 'Course not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # Convert ObjectId to string for JSON serialization
+        course['_id'] = str(course['_id'])
+        # if 'admin_id' in course:
+        #     course['admin_id'] = str(course['admin_id'])
+
+        return Response({
+            'course': course
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error fetching course: {str(e)}", exc_info=True)
+        return Response({
+            'status': 'error',
+            'message': 'Failed to fetch course'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def enroll_user_in_course(request):
+    try:
+        user_id = request.data.get('user_id')
+        course_id = request.data.get('course_id')
+
+        if not user_id or not course_id:
+            return Response({"error": "User ID and Course ID are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate user and course
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        course = courses_collection.find_one({"_id": ObjectId(course_id)})
+
+        if not user or not course:
+            return Response({"error": "User or course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if enrollment already exists
+        existing_enrollment = enrollments_collection.find_one({"user_id": user_id, "course_id": course_id})
+        if existing_enrollment:
+            return Response({"message": "User already enrolled in the course"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the enrollment
+        enrollment_data = {
+            "user_id": user_id,
+            "course_id": course_id,
+            "admin_id": course.get("admin_id"),
+            "enrollment_date": datetime.now(timezone.utc),
+            "progress": 0,
+            "status": "active"
+        }
+        enrollments_collection.insert_one(enrollment_data)
+        return Response({"message": "Enrollment successful"}, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        logger.error(f"Error enrolling user in course: {str(e)}", exc_info=True)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

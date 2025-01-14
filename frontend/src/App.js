@@ -1,4 +1,4 @@
-  import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -28,7 +28,7 @@ function App() {
     const checkUser = () => {
       const userInfo = localStorage.getItem('userInfo');
       if (userInfo) {
-        console.log('User Type: ', JSON.parse(userInfo).user_type); 
+        // console.log('User Type: ', JSON.parse(userInfo).user_type); 
         const parsedUser = JSON.parse(userInfo);
         setUser(parsedUser);
       } else {
@@ -63,7 +63,7 @@ function App() {
             </AppBar>
           )} */}
           
-          <Container>
+          {/* <Container> */}
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
@@ -77,12 +77,12 @@ function App() {
               <Route path="/syllabus" element={<PrivateRoute element={<SyllabusDisplay />} />} />
               <Route path="/edit-syllabus" element={<PrivateRoute element={<SyllabusDisplay />} />} />
               <Route path="/content" element={<PrivateRoute element={<ContentDisplay />} />} />
-              <Route path="/admin-home" element={user && user.user_type == 'admin' ? <AdminHome /> : <Navigate to="/login" />} />
-              <Route path="/user-home" element={user && user.user_type == 'user' ? <UserHome /> : <Navigate to="/login" />} />
-              <Route path="/" element={user && user.user_type == 'admin' ? <AdminHome /> : <UserHome />} />
+              <Route path="/admin-home" element={<PrivateRoute element={<AdminHome />} />} />
+              <Route path="/user-home" element={<PrivateRoute element={<UserHome />} />} />
+              <Route path="/" element={<PrivateRoute element={user && user.user_type == 'admin' ? <AdminHome /> : <UserHome />} />} />
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
-          </Container>
+          {/* </Container> */}
         </Box>
       </Router>
     </ErrorBoundary>

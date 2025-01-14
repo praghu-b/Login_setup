@@ -1,86 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Container, Avatar, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import PersonIcon from '@mui/icons-material/Person';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-
-// Styled components
-const PageContainer = styled(Box)({
-  minHeight: '100vh',
-  backgroundColor: '#f5f5f5', // Changed to a light gray for a softer login theme
-  padding: '2rem 0',
-});
-
-const Header = styled(Box)({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '0 2rem',
-  marginBottom: '3rem',
-});
-
-const GridContainer = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-  gap: '2rem',
-  padding: '0 2rem',
-});
-
-const Card = styled(Box)({
-  backgroundColor: '#ffffff',
-  borderRadius: '12px',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', // Slightly increased shadow for depth
-  transition: 'transform 0.3s, box-shadow 0.3s',
-  cursor: 'pointer',
-  overflow: 'hidden',
-  '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)', // Enhanced hover effect
-  },
-});
-
-const CardImage = styled('img')({
-  width: '100%',
-  height: '200px',
-  objectFit: 'cover',
-});
-
-const CardContent = styled(Box)({
-  padding: '1.5rem',
-});
-
-const CardTitle = styled(Typography)({
-  fontSize: '1.25rem',
-  fontWeight: '600',
-  color: '#e91e63', // Changed to a primary theme color
-  marginBottom: '0.5rem',
-});
-
-const CardDescription = styled(Typography)({
-  color: '#666666',
-  fontSize: '0.9rem',
-});
-
-const items = [
-  {
-    title: 'Python Course',
-    description: 'Learn python from the masters',
-    image: 'https://via.placeholder.com/400x200?text=Python+Course',
-    link: '/python'
-  },
-  {
-    title: 'Java',
-    description: 'Learn java from the masters',
-    image: 'https://via.placeholder.com/400x200?text=Java+Course',
-    link: '/java'
-  },
-];
+import axios from 'axios';
+import Sidebar from './Sidebar';
+import CoursePreview from './home/CoursePreview';
 
 const UserHome = () => {
   const [user, setUser] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [previewSyllabus, setPreviewSyllabus] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [isPopUp, setIsPopUp] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,14 +23,31 @@ const UserHome = () => {
       return;
     }
     setUser(parsedUser);
+
+    // Fetch courses
+    axios.get("http://localhost:8000/users/fetch-all-courses/", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        const data = response.data;
+        if (data.courses) {
+          setCourses(data.courses);
+          console.log('COURSES:', data.courses);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching courses:", error);
+      });
   }, [navigate]);
 
   const handleProfileClick = (event) => {
-    setAnchorEl(event.currentTarget);
+    navigate('/profile');
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    // setAnchorEl(null);
   };
 
   const handleMenuItemClick = (path) => {
@@ -110,67 +55,58 @@ const UserHome = () => {
     navigate(path);
   };
 
+  const handleCoursePreview = (courseId) => {
+    axios.get(`http://localhost:8000/users/${courseId}/fetch-syllabus/`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        const data = response.data;
+        setPreviewSyllabus(data.course);
+        setIsPopUp(true);
+      })
+      .catch((error) => {
+        console.error("Error fetching course data:", error);
+      });
+  };
+
   if (!user) return null;
 
   const firstName = user.name.split(' ')[0];
 
   return (
-    <PageContainer>
-      <Header>
-        <Box>
-          <Typography variant="h4" sx={{ color: '#e91e63', fontWeight: '600' }}> {/* Changed color to match theme */}
-            AI Coursify
-          </Typography>
-          <Typography variant="h6" sx={{ color: '#666666', mt: 1 }}>
-            Welcome, {firstName}!
-          </Typography>
-        </Box>
-        <IconButton onClick={handleProfileClick} size="large">
-          <AccountCircleIcon sx={{ fontSize: 40, color: '#e91e63' }} /> {/* Changed color to match theme */}
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem onClick={() => handleMenuItemClick('/profile')}>
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Profile Info</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handleMenuItemClick('/dashboard')}>
-            <ListItemIcon>
-              <DashboardIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Dashboard</ListItemText>
-          </MenuItem>
-        </Menu>
-      </Header>
+    <div className="flex min-h-screen bg-gray-100">
+      <Sidebar />
+      {isPopUp && <CoursePreview syllabus={{ previewSyllabus }} setIsPopUp={setIsPopUp} />}
+      <div className="flex-1 py-8">
+        <div className="flex justify-between items-center px-8 mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800">AI Coursify</h1>
+            <h2 className="text-xl text-gray-600 mt-2">Welcome, {firstName}!</h2>
+          </div>
+        </div>
 
-      <Typography variant="h5" sx={{ color: '#e91e63', fontWeight: '900', mb: 2 }}> {/* Changed color to match theme */}
-        Courses
-      </Typography>
-      <GridContainer>
-        {items.map((item, index) => (
-          <Card key={index} onClick={() => navigate(item.link)}>
-            <CardImage src={item.image} alt={item.title} />
-            <CardContent>
-              <CardTitle>{item.title}</CardTitle>
-              <CardDescription>{item.description}</CardDescription>
-            </CardContent>
-          </Card>
-        ))}
-      </GridContainer>
-    </PageContainer>
+        <h3 className="text-2xl font-bold text-gray-800 mb-4 mt-8 px-8">Published Courses</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-8">
+          {courses.map((course, index) => (
+            <div key={course.course_id || index} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <img className="w-full bg-gray-200 h-52 object-cover" />
+              <div className="flex justify-between p-4">
+                <div className=''>
+                  <h4 className="text-xl font-semibold text-gray-800 mb-2">{course.course_details.course_name}</h4>
+                  <p className="text-gray-600 text-sm">{course.course_details.domain} - {course.course_details.level}</p>
+                  <p className="text-gray-600 text-sm">{course.course_details.duration}</p>
+                </div>
+                <div className='my-auto'>
+                  <button onClick={() => handleCoursePreview(course.course_id)} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-2xl">Syllabus</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 
