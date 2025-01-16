@@ -1,3 +1,4 @@
+// OTPVerification.js
 import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, Typography, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
@@ -44,24 +45,26 @@ const OTPVerification = ({ type, onVerify, identifier }) => {
 
       if (type === 'email') {
         endpoint = '/api/send-signup-otp/';
-        payload = { 
-          email: identifier,
-          type: 'email'
-        };
+        payload = { email: identifier, type: 'email' };
       } else if (type === 'reset') {
         endpoint = '/api/send-reset-otp/';
-        payload = {
-          email: identifier,
-          type: 'reset'
-        };
+        payload = { email: identifier, type: 'reset' };
       } else if (type === 'mobile') {
         endpoint = '/api/send-mobile-otp/';
-        payload = { 
-          mobile_number: identifier,
-          email: localStorage.getItem('tempEmail'),
-          type: 'mobile'
+        let email;
+        const userInfo = localStorage.getItem('userInfo');
+        if (userInfo) {
+            email = JSON.parse(userInfo).email;
+        } else {
+            email = localStorage.getItem('tempEmail');
+        }
+        payload = {
+            mobile_number: identifier,
+            email: email,
+            type: 'mobile',
         };
-      }
+    }
+    
 
       const response = await axios.post(endpoint, payload);
 
@@ -94,24 +97,17 @@ const OTPVerification = ({ type, onVerify, identifier }) => {
 
       if (type === 'email') {
         endpoint = '/api/verify-signup-otp/';
-        payload = { 
-          email: identifier,
-          otp: otp,
-          type: 'email'
-        };
+        payload = { email: identifier, otp: otp, type: 'email' };
       } else if (type === 'reset') {
         endpoint = '/api/verify-reset-otp/';
-        payload = {
-          email: identifier,
-          otp: otp,
-          type: 'reset'
-        };
+        payload = { email: identifier, otp: otp, type: 'reset' };
       } else if (type === 'mobile') {
         endpoint = '/api/verify-mobile-otp/';
-        payload = { 
+        payload = {
           mobile_number: identifier,
+          email: localStorage.getItem('tempEmail'),
           otp: otp,
-          type: 'mobile'
+          type: 'mobile',
         };
       }
 
@@ -143,7 +139,7 @@ const OTPVerification = ({ type, onVerify, identifier }) => {
         onChange={(e) => setOtp(e.target.value)}
         disabled={loading || !isOtpSent}
         error={otp.length > 0 && otp.length !== 6}
-        helperText={otp.length > 0 && otp.length !== 6 ? "OTP must be 6 digits" : ""}
+        helperText={otp.length > 0 && otp.length !== 6 ? 'OTP must be 6 digits' : ''}
         inputProps={{
           maxLength: 6,
           pattern: '[0-9]*',
@@ -151,20 +147,14 @@ const OTPVerification = ({ type, onVerify, identifier }) => {
       />
 
       {isOtpSent && timer > 0 ? (
-        <TimerText>
-          {`Expires in ${timer}s`}
-        </TimerText>
+        <TimerText>{`Expires in ${timer}s`}</TimerText>
       ) : (
         <ResendButton
           variant="outlined"
           onClick={handleSendOTP}
           disabled={loading}
         >
-          {loading ? (
-            <CircularProgress size={24} />
-          ) : (
-            isOtpSent ? 'Resend OTP' : 'Send OTP'
-          )}
+          {loading ? <CircularProgress size={24} /> : isOtpSent ? 'Resend OTP' : 'Send OTP'}
         </ResendButton>
       )}
 
@@ -179,4 +169,4 @@ const OTPVerification = ({ type, onVerify, identifier }) => {
   );
 };
 
-export default OTPVerification; 
+export default OTPVerification;

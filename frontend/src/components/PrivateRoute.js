@@ -7,7 +7,7 @@ const PrivateRoute = ({ element }) => {
   const userType = userInfo ? JSON.parse(userInfo).user_type : null;
 
   // Define accessible routes for user and admin
-  const userRoutes = ['/user-home', '/profile'];
+  const userRoutes = ['/user-home', '/profile', '/course-content'];
   const adminRoutes = ['/syllabus', '/content', '/admin-home', '/create-course', '/dashboard', '/profile'];
 
   if (!userInfo) {

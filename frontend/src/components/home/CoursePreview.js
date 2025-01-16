@@ -1,11 +1,14 @@
 import React from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useLoading } from '../../context/LoadingContext';
 
-const CoursePreview = ({ syllabus, setIsPopUp }) => {
+const CoursePreview = ({ syllabus, setIsPopUp, status }) => {
+    const { setIsLoading } = useLoading()
+    const navigate = useNavigate()
     const { previewSyllabus } = syllabus || {};
+
     const user_id = JSON.parse(localStorage.getItem('userInfo')).id;
-    const navigate = useNavigate();
-    console.log('PREVIEW SYLLABUS:', previewSyllabus);
 
     if (!previewSyllabus) {
         return <div className="text-center text-gray-500">No syllabus available</div>;
@@ -30,6 +33,7 @@ const CoursePreview = ({ syllabus, setIsPopUp }) => {
 
     const handleEnroll = () => {
         const enrollInCourse = async () => {
+            setIsLoading(true)
             try {
                 const response = await fetch('http://localhost:8000/users/enroll/', {
                     method: 'POST',
@@ -44,12 +48,14 @@ const CoursePreview = ({ syllabus, setIsPopUp }) => {
                     throw new Error(errorData.message || 'Failed to enroll in course');
                 }
 
-                const result = await response.json();
+                await response.json();
                 setIsPopUp(false);
             } catch (error) {
                 console.error('Error enrolling in course:', error);
                 alert(error.message);
                 setIsPopUp(false);
+            } finally {
+                setIsLoading(false)
             }
         };
 
@@ -57,8 +63,8 @@ const CoursePreview = ({ syllabus, setIsPopUp }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-4 rounded-lg shadow-lg max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-auto p-4">
+            <div className="bg-white p-4 rounded-lg shadow-lg max-w-2xl w-full max-h-full overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4">{previewSyllabus.course_details.course_name}</h2>
                 <div className="mb-4">
                     <p><strong>Instructor:</strong> {previewSyllabus.course_details.instructor}</p>
@@ -66,11 +72,26 @@ const CoursePreview = ({ syllabus, setIsPopUp }) => {
                     <p><strong>Level:</strong> {previewSyllabus.course_details.level}</p>
                 </div>
                 {renderModules(previewSyllabus.content)}
-                <button 
-                    onClick={handleEnroll} 
-                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                {status === 'enroll' ? (
+                    <button
+                        onClick={handleEnroll}
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Enroll
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => navigate('/course-content', { state: { syllabus: previewSyllabus.content, course_topic: previewSyllabus.course_details.course_name } })}
+                        className="mt-4 ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                        Start
+                    </button>
+                )}
+                <button
+                    onClick={() => setIsPopUp(false)}
+                    className="mt-4 ml-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                 >
-                    Enroll
+                    Close
                 </button>
             </div>
         </div>

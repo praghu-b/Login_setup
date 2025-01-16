@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GenerateSyllabusView, UpdateSyllabusView, GenerateContentView, RegenerateModuleContentView, DashboardView, save_syllabus, save_generated_content
+from .views import GenerateSyllabusView, UpdateSyllabusView, GenerateContentView, RegenerateModuleContentView, DashboardView, save_syllabus, save_generated_content, get_enrollments, publish_course
 
 urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
@@ -9,5 +9,7 @@ urlpatterns = [
     path('regenerate-module-content/', RegenerateModuleContentView.as_view(), name='regenerate-module-content'),  # New endpoint for regenerating module content
     path('save-syllabus/', save_syllabus, name='save-syllabus'),  # Add save-syllabus endpoint
     path('save-course/', save_generated_content, name='save-course'),  # Add save-course endpoint
-    path('<str:adminId>/courses/', DashboardView.as_view(), name='admin-courses')  # Updated path
+    path('<str:adminId>/courses/', DashboardView.as_view(), name='admin-courses'),  # Updated path
+    path('enrollments/<str:adminId>/', get_enrollments, name='get-enrollments'),  # New endpoint for getting enrollments
+    path('publish/', publish_course, name='publish-course'),
 ]

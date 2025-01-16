@@ -17,10 +17,6 @@ function SyllabusDisplay() {
       navigate('/login');
       return;
     }
-
-    console.log('SYLLABUS: ',syllabus);
-    
-
     setUserId(storedUserInfo.id);
   }, [navigate]);
 
@@ -78,7 +74,7 @@ function SyllabusDisplay() {
         body: JSON.stringify({ syllabus: data.syllabus }),
       });
       const contentData = await contentResponse.json();
-      
+
 
       navigate("/content", { state: { content: contentData.content, course_details: { course_name: syllabus.course_name, domain: syllabus.domain, level: syllabus.level, duration: syllabus.duration } } });
     } catch (error) {
@@ -175,7 +171,7 @@ function SyllabusDisplay() {
                 className="border border-gray-300 rounded p-2 w-full mb-2"
               />
             ) : (
-              <h4 className="text-lg font-medium text-gray-800">{module.title}</h4>
+              <h4 className="text-lg font-bold text-gray-800">{module.title}</h4>
             )}
             <ul className="list-disc list-inside mt-2">
               {module.submodules.map((submodule) => (

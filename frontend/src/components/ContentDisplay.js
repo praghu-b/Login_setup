@@ -5,7 +5,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 function ContentDisplay() {
   const location = useLocation();
   const navigate = useNavigate();
-  // const course_details = location.state?.course_details;
   const [content, setContent] = useState(location.state?.content || {});
   const [course_details, setCourseDetails] = useState(location.state?.course_details || {});
   const [editingModule, setEditingModule] = useState(null);
@@ -88,18 +87,32 @@ function ContentDisplay() {
   };
 
   const handleNextSubmodule = () => {
+    const moduleIds = Object.keys(content);
+    const currentModuleIndex = moduleIds.indexOf(activeModuleId);
     const submodules = content[activeModuleId].submodules_content;
     const currentIndex = submodules.findIndex(submodule => submodule.submodule_id === activeSubmoduleId);
+
     if (currentIndex < submodules.length - 1) {
       setActiveSubmoduleId(submodules[currentIndex + 1].submodule_id);
+    } else if (currentModuleIndex < moduleIds.length - 1) {
+      const nextModuleId = moduleIds[currentModuleIndex + 1];
+      setActiveModuleId(nextModuleId);
+      setActiveSubmoduleId(content[nextModuleId].submodules_content[0].submodule_id);
     }
   };
 
   const handlePreviousSubmodule = () => {
+    const moduleIds = Object.keys(content);
+    const currentModuleIndex = moduleIds.indexOf(activeModuleId);
     const submodules = content[activeModuleId].submodules_content;
     const currentIndex = submodules.findIndex(submodule => submodule.submodule_id === activeSubmoduleId);
+
     if (currentIndex > 0) {
       setActiveSubmoduleId(submodules[currentIndex - 1].submodule_id);
+    } else if (currentModuleIndex > 0) {
+      const previousModuleId = moduleIds[currentModuleIndex - 1];
+      setActiveModuleId(previousModuleId);
+      setActiveSubmoduleId(content[previousModuleId].submodules_content[content[previousModuleId].submodules_content.length - 1].submodule_id);
     }
   };
 
@@ -148,7 +161,7 @@ function ContentDisplay() {
         </div>
       )}
       {/* Sidebar */}
-      <div className="fixed top-0 left-0 bottom-0 bg-gray-800 text-white w-1/5 p-4 overflow-y-auto" style={{ scrollbarWidth: '0' }}>
+      <div className="fixed top-0 left-0 bottom-0 bg-gray-800 text-white w-1/4 p-4 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <h2 className="text-xl font-bold mb-4 bg-[#8F2D56] text-white p-2 rounded">{course_details.course_name}</h2>
         {Object.keys(content).map((moduleId) => (
           <div key={moduleId} className="mb-4" style={{ scrollbarWidth: '0' }}>
@@ -177,7 +190,7 @@ function ContentDisplay() {
       </div>
 
       {/* Content Space */}
-      <div className="w-4/5 bg-white text-gray-800 p-4" style={{ scrollbarWidth: '0' }}>
+      <div className="w-3/4 bg-white text-gray-800 p-4" style={{ scrollbarWidth: 'none' }}>
         {activeModuleId && (
           <div className="mb-6 p-4 rounded-lg">
             <h3 className="text-xl text-[#8F2D56] font-semibold mb-2">
@@ -216,19 +229,19 @@ function ContentDisplay() {
                   Save
                 </button>
               )}
-              <button
+              {/* <button
                 onClick={() => handleRegenerateModule(activeModuleId)}
                 className="bg-yellow-500 text-white px-4 py-2 rounded hover:shadow-lg"
               >
                 Regenerate
-              </button>
+              </button> */}
             </div>
 
             <div className="flex justify-between items-center mt-4">
               <button
                 onClick={handlePreviousSubmodule}
                 className="bg-[#8F2D56] text-white px-4 py-2 rounded hover:shadow-lg"
-                disabled={!content[activeModuleId].submodules_content.find((submodule, index, array) => array[index - 1] && submodule.submodule_id === activeSubmoduleId)}
+                disabled={Object.keys(content).indexOf(activeModuleId) === 0 && content[activeModuleId].submodules_content.findIndex(submodule => submodule.submodule_id === activeSubmoduleId) === 0}
               >
                 Previous
               </button>
@@ -236,7 +249,7 @@ function ContentDisplay() {
               <button
                 onClick={handleNextSubmodule}
                 className="bg-[#8F2D56] text-white px-4 py-2 rounded hover:shadow-lg"
-                disabled={!content[activeModuleId].submodules_content.find((submodule, index, array) => array[index + 1] && submodule.submodule_id === activeSubmoduleId)}
+                disabled={Object.keys(content).indexOf(activeModuleId) === Object.keys(content).length - 1 && content[activeModuleId].submodules_content.findIndex(submodule => submodule.submodule_id === activeSubmoduleId) === content[activeModuleId].submodules_content.length - 1}
               >
                 Next
               </button>

@@ -4,14 +4,15 @@ import GraduateImg from '../images/login.png';
 
 const AuthBackground = ({ children }) => {
   return (
-    <Box sx={{ display: 'flex', minHeight: '90vh', bgcolor: '#FFE6F3' }}>
+    <Box sx={{ display: 'flex', minHeight: '90vh', maxWidth: '90vw', bgcolor: '#F2F2F2', marginX: 'auto', borderRadius: '30px' }}>
       <Box
         sx={{
           flex: 1,
-          bgcolor: '#FFE6F3',
+          bgcolor: '#F2F2F2',
           display: { xs: 'none', md: 'flex' },
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          borderRadius: '30px'
         }}
       >
         <img

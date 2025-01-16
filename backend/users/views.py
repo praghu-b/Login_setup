@@ -525,7 +525,7 @@ def send_mobile_otp(request):
     try:
         data = request.data
         mobile_number = data.get('mobile_number')
-        email = data.get('email')  # We'll use this to send OTP for testing
+        email = data.get('email')
         verification_type = data.get('type')
 
         if not mobile_number or not email or not verification_type:
@@ -774,10 +774,7 @@ def fetch_syllabus(request, courseId):
                 'error': 'Course not found'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        # Convert ObjectId to string for JSON serialization
         course['_id'] = str(course['_id'])
-        # if 'admin_id' in course:
-        #     course['admin_id'] = str(course['admin_id'])
 
         return Response({
             'course': course
@@ -824,4 +821,25 @@ def enroll_user_in_course(request):
 
     except Exception as e:
         logger.error(f"Error enrolling user in course: {str(e)}", exc_info=True)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def fetch_user_enrolled_courses(request, userId):
+    try:
+        user_id = userId
+        if not user_id:
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        enrolled_courses = []
+        enrollments_cursor = enrollments_collection.find({"user_id": user_id})
+        for enrollment in enrollments_cursor:
+            course = courses_collection.find_one({"_id": ObjectId(enrollment["course_id"])})
+            if course:
+                course["_id"] = str(course["_id"])
+                enrolled_courses.append(course)
+
+        return Response({"courses": enrolled_courses}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error fetching enrolled courses: {str(e)}", exc_info=True)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

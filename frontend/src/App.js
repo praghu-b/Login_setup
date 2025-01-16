@@ -8,27 +8,26 @@ import UserHome from './components/UserHome';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Profile from './components/Profile';
-import { AppBar, Toolbar, Button, Container, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './components/Dashboard';
 import CourseDetails from './components/CourseDetails';
 import SyllabusDisplay from './components/SyllabusDisplay';
 import ContentDisplay from './components/ContentDisplay';
-import PrivateRoute from './components/PrivateRoute'; // Import PrivateRoute
+import PrivateRoute from './components/PrivateRoute';
+import UserProvider from './context/UserProvider';
+import CourseContent from './components/home/CourseContent';
 
 function App() {
-  // Get current path
   const path = window.location.pathname;
-  const showNavBar = !['/user-home', '/admin-home', '/profile'].includes(path);
-
+  // const showNavBar = !['/user-home', '/admin-home', '/profile'].includes(path);
   const [user, setUser] = useState(null);
-  
+
 
   useEffect(() => {
     const checkUser = () => {
       const userInfo = localStorage.getItem('userInfo');
       if (userInfo) {
-        // console.log('User Type: ', JSON.parse(userInfo).user_type); 
         const parsedUser = JSON.parse(userInfo);
         setUser(parsedUser);
       } else {
@@ -37,8 +36,6 @@ function App() {
     };
 
     checkUser();
-
-    // Listen for changes in localStorage
     window.addEventListener('storage', checkUser);
 
     return () => {
@@ -50,20 +47,7 @@ function App() {
     <ErrorBoundary>
       <Router>
         <Box sx={{ flexGrow: 1 }}>
-          {/* {showNavBar && (
-            <AppBar position="static">
-              <Toolbar>
-                <Button color="inherit" component={Link} to="/login">
-                  Login
-                </Button>
-                <Button color="inherit" component={Link} to="/signup">
-                  Sign Up
-                </Button>
-              </Toolbar>
-            </AppBar>
-          )} */}
-          
-          {/* <Container> */}
+          <UserProvider>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
@@ -79,10 +63,11 @@ function App() {
               <Route path="/content" element={<PrivateRoute element={<ContentDisplay />} />} />
               <Route path="/admin-home" element={<PrivateRoute element={<AdminHome />} />} />
               <Route path="/user-home" element={<PrivateRoute element={<UserHome />} />} />
+              <Route path="/course-content" element={<PrivateRoute element={<CourseContent />}/>}/>
               <Route path="/" element={<PrivateRoute element={user && user.user_type == 'admin' ? <AdminHome /> : <UserHome />} />} />
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
-          {/* </Container> */}
+          </UserProvider>
         </Box>
       </Router>
     </ErrorBoundary>
