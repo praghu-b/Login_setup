@@ -6,6 +6,7 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import AuthBackground from './AuthBackground';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CircularProgress from '@mui/material/CircularProgress';  // Import CircularProgress
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -18,6 +19,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [userType, setUserType] = useState('user');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);  // Add loading state
 
   useEffect(() => {
     // Set user type based on URL path
@@ -46,6 +48,7 @@ const Login = () => {
         onSubmit={async (values, { setSubmitting }) => {
           try {
             setError('');
+            setLoading(true);  // Set loading to true when starting the login process
             const response = await axios.post('/api/login/', {
               ...values,
               user_type: userType
@@ -58,6 +61,7 @@ const Login = () => {
             setError(error.response?.data?.error || 'Login failed');
           }
           setSubmitting(false);
+          setLoading(false);  // Set loading to false once the request is complete
         }}
       >
         {({ errors, touched, isSubmitting }) => (
@@ -105,9 +109,13 @@ const Login = () => {
             <button
               type="submit"
               className="w-full bg-pink-900 text-white py-4 rounded-lg font-semibold hover:bg-rose-700 transition-colors"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}  // Disable button if loading or submitting
             >
-              Sign In
+              {loading ? (
+                <CircularProgress size={24} className="mx-auto" color="inherit" />  // Show loading spinner
+              ) : (
+                'Sign In'
+              )}
             </button>
 
             <div className="text-center mt-6">
@@ -126,4 +134,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

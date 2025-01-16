@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 import axios from '../config/axios';
 import OTPVerification from './OTPVerification';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import GraduateImg from '../images/login.png';
 import AuthBackground from './AuthBackground';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const SignupSchema = Yup.object().shape({
   first_name: Yup.string().required('Required'),
@@ -32,11 +32,12 @@ const Signup = () => {
   const [userType, setUserType] = useState('user');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isMobileVerified, setIsMobileVerified] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'success'
+    severity: 'success',
   });
 
   return (
@@ -55,38 +56,43 @@ const Signup = () => {
         }}
         validationSchema={SignupSchema}
         onSubmit={async (values, { setSubmitting }) => {
+          if (!isEmailVerified) {
+            setSnackbar({
+              open: true,
+              message: 'Please verify your email first',
+              severity: 'error',
+            });
+            return;
+          }
+          if (!isMobileVerified) {
+            setSnackbar({
+              open: true,
+              message: 'Please verify your mobile number first',
+              severity: 'error',
+            });
+            return;
+          }
+
+          setError('');
+          setLoading(true);
+
           try {
-            if (!isEmailVerified) {
-              setSnackbar({
-                open: true,
-                message: 'Please verify your email first',
-                severity: 'error'
-              });
-              return;
-            }
-            if (!isMobileVerified) {
-              setSnackbar({
-                open: true,
-                message: 'Please verify your mobile number first',
-                severity: 'error'
-              });
-              return;
-            }
-            setError('');
             await axios.post('/api/register/', {
               ...values,
               name: `${values.first_name} ${values.last_name}`,
-              user_type: userType
+              user_type: userType,
             });
             setSnackbar({
               open: true,
               message: `${userType === 'admin' ? 'Admin' : 'User'} registered successfully!`,
-              severity: 'success'
+              severity: 'success',
             });
             navigate('/login');
           } catch (error) {
             setError(error.response?.data?.error || 'Registration failed');
           }
+
+          setLoading(false);
           setSubmitting(false);
         }}
       >
@@ -95,29 +101,30 @@ const Signup = () => {
             <div className="flex flex-col gap-3">
               <div className="flex gap-3">
                 <Field
-                  className={`w-full p-2 border placeholder-black rounded-lg ${touched.first_name && errors.first_name ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border placeholder-black rounded-lg ${
+                    touched.first_name && errors.first_name ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   name="first_name"
                   placeholder="First Name"
                 />
                 <Field
-                  className="w-full p-2 border placeholder-black rounded-lg border-gray-300"
+                  className={`w-full p-2 border placeholder-black rounded-lg ${
+                    touched.last_name && errors.last_name ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   name="last_name"
-                  placeholder="Middle Name (optional)"
+                  placeholder="Last Name"
                 />
-              </div>  
-              
-              <Field
-                className={`w-full p-2 border placeholder-black rounded-lg ${touched.last_name && errors.last_name ? 'border-red-500' : 'border-gray-300'}`}
-                name="last_name"
-                placeholder="Last Name"
-              />
+              </div>
 
               <div className="relative">
                 <Field
-                  className={`w-full p-2 border placeholder-black rounded-lg ${touched.email && errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border placeholder-black rounded-lg ${
+                    touched.email && errors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   name="email"
                   placeholder="Email Address"
                   disabled={isEmailVerified}
+                  onBlur={(e) => localStorage.setItem('tempEmail', e.target.value)}
                 />
                 {!isEmailVerified && values.email && !errors.email && (
                   <OTPVerification
@@ -129,18 +136,21 @@ const Signup = () => {
                         setSnackbar({
                           open: true,
                           message: 'Email verified successfully',
-                          severity: 'success'
+                          severity: 'success',
                         });
                       }
                     }}
-                    CustomButton={<button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-rose-600 text-white py-1 px-2 rounded">Verify</button>}
                   />
                 )}
               </div>
 
               <div className="relative">
                 <Field
-                  className={`w-full p-2 border placeholder-black rounded-lg ${touched.mobile_number && errors.mobile_number ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border placeholder-black rounded-lg ${
+                    touched.mobile_number && errors.mobile_number
+                      ? 'border-red-500'
+                      : 'border-gray-300'
+                  }`}
                   name="mobile_number"
                   placeholder="Phone Number"
                   disabled={isMobileVerified}
@@ -155,24 +165,29 @@ const Signup = () => {
                         setSnackbar({
                           open: true,
                           message: 'Mobile number verified successfully',
-                          severity: 'success'
+                          severity: 'success',
                         });
                       }
                     }}
-                    CustomButton={<button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-rose-600 text-white py-1 px-2 rounded">Verify</button>}
                   />
                 )}
               </div>
-              
+
               <Field
-                className={`w-full p-2 border placeholder-black rounded-lg ${touched.password && errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full p-2 border placeholder-black rounded-lg ${
+                  touched.password && errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
                 name="password"
                 placeholder="Password"
                 type="password"
               />
-              
+
               <Field
-                className={`w-full p-2 border placeholder-black rounded-lg ${touched.confirm_password && errors.confirm_password ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full p-2 border placeholder-black rounded-lg ${
+                  touched.confirm_password && errors.confirm_password
+                    ? 'border-red-500'
+                    : 'border-gray-300'
+                }`}
                 name="confirm_password"
                 placeholder="Confirm Password"
                 type="password"
@@ -181,22 +196,30 @@ const Signup = () => {
               <div className="text-center">
                 <p>
                   I agree with the{' '}
-                  <RouterLink to="/terms" className="text-amber-400">Terms & Conditions</RouterLink>
+                  <RouterLink to="/terms" className="text-amber-400">
+                    Terms & Conditions
+                  </RouterLink>
                 </p>
               </div>
-              
+
               <button
                 type="submit"
-                className={`w-full bg-pink-900 text-white py-2 rounded-lg font-semibold ${isSubmitting || !isEmailVerified || !isMobileVerified ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isSubmitting || !isEmailVerified || !isMobileVerified}
+                className={`w-full bg-pink-900 text-white py-2 rounded-lg font-semibold ${
+                  isSubmitting || !isEmailVerified || !isMobileVerified || loading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={isSubmitting || !isEmailVerified || !isMobileVerified || loading}
               >
-                Sign Up
+                {loading ? <CircularProgress size={24} className="mx-auto" /> : 'Sign Up'}
               </button>
 
               <div className="text-center">
                 <p>
                   Already have an account?{' '}
-                  <RouterLink to="/login" className="text-amber-400">Sign In</RouterLink>
+                  <RouterLink to="/login" className="text-amber-400">
+                    Sign In
+                  </RouterLink>
                 </p>
               </div>
             </div>
