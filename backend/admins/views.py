@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
-from .mongodb import admins_collection, courses_collection
+from .mongodb import admins_collection, courses_collection, enrollments_collection, users_collection
 from rest_framework.decorators import api_view
+from bson import ObjectId
 import requests
 
 
@@ -496,3 +497,72 @@ class DashboardView(APIView):
             return Response({
                 'error': 'Failed to fetch dashboard data'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_enrollments(request, adminId):
+    try:
+        admin_id = adminId
+        if not admin_id:
+            return Response(
+                {"error": "admin_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Get enrollments for the specific admin_id
+        enrollments_data = []
+        enrollments_cursor = enrollments_collection.find({"admin_id": admin_id})
+        
+        for enrollment in enrollments_cursor:
+            # Get user and course details
+            user_id = enrollment.get('user_id')
+            course_id = enrollment.get('course_id')
+
+            user = users_collection.find_one({"_id": ObjectId(user_id)})
+            course = courses_collection.find_one({"_id": ObjectId(course_id)})
+
+            # Prepare the enrollment data
+            enrollment_data = {
+                'enrollment_id': str(enrollment.get('_id', '')),
+                'admin_id': enrollment.get('admin_id', ''),
+                'course_id': enrollment.get('course_id', ''),
+                'user_id': enrollment.get('user_id', ''),
+                'user_name': user.get('name') if user else "Unknown",
+                'course_name': course.get('course_details', {}).get('course_name') if course else "Unknown",
+                'status': enrollment.get('status', ''),
+                'enrollment_date': enrollment.get('enrollment_date', ''),
+                'progress': enrollment.get('progress', 0),
+                'email': user.get('email') if user else "Unknown",
+                'mobile_number': user.get('mobile_number') if user else "Unknown"
+            }
+            
+            enrollments_data.append(enrollment_data)
+        
+        return Response({
+            'enrollments': enrollments_data
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"An error occurred while fetching enrollments: {str(e)}")
+        return Response(
+            {"error": f"An error occurred: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+@api_view(['PUT'])
+def publish_course(request):
+    try:
+        course_id = request.data.get('course_id')
+
+        if not course_id:
+            return Response({'error': 'Course ID not found!!!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        result = courses_collection.update_one(
+            {'_id': ObjectId(course_id)},
+            {'$set': { 'status': 'published'}}
+        )
+        
+        if result.matched_count == 0:
+            Response( { 'message': 'Course was not found' }, status=status.HTTP_200_OK )
+
+        return Response({'message': 'Your course has been published successfully!!!'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"courses": "Failed to publish the course!!!" })

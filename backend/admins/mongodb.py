@@ -25,6 +25,7 @@ try:
     users_collection = db["users"]
     admins_collection = db["admins"]
     courses_collection = db["courses"]
+    enrollments_collection = db["enrollments"]
 
     # Create indexes for email (unique) for both collections
     users_collection.create_index("email", unique=True)
