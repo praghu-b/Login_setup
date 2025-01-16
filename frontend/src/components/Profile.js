@@ -26,7 +26,7 @@ const Profile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = localStorage.getItem('userInfo')
     if (!userInfo) {
       navigate('/login');
       return;
@@ -36,7 +36,7 @@ const Profile = () => {
   }, [navigate]);
 
   const handleBack = () => {
-    navigate('/user-home');
+    window.location.reload();
   };
 
   const handleLogout = () => {
@@ -133,16 +133,16 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="md">
+    <Container>
       <Box sx={{ mt: 4, mb: 4 }}>
-        <Button onClick={handleBack} variant="outlined" sx={{ mb: 2, color: '#e91e63' }}>
+        <Button onClick={() => handleBack()} variant="outlined" sx={{ mb: 2, color: '#2c3e50' }}>
           Back to Home
         </Button>
         
         <Card elevation={3} sx={{ p: 3, bgcolor: '#ffffff' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
             <Avatar sx={{ width: 100, height: 100, mb: 2 }}>
-              <AccountCircleIcon sx={{ fontSize: 100, color: '#e91e63' }} />
+              <AccountCircleIcon sx={{ fontSize: 100, color: '#2c3e50' }} />
             </Avatar>
             <Typography variant="h4" gutterBottom sx={{ color: '#2c3e50' }}>
               Profile Details
@@ -225,7 +225,7 @@ const Profile = () => {
               variant="contained" 
               color="error" 
               onClick={handleLogout}
-              sx={{ minWidth: 200, bgcolor: '#e91e63', color: '#ffffff' }}
+              sx={{ minWidth: 200, bgcolor: 'red', color: '#ffffff' }}
             >
               Logout
             </Button>
